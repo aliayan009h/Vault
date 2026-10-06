@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Secure Portal</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            background-color: #0b0c10;
+            margin: 0;
+            padding: 20px;
+            color: #e2e8f0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .page-container {
+            width: 100%;
+            max-width: 320px;
+            text-align: center;
+            margin: 40px auto 0 auto;
+        }
+
+        .title-sub {
+            letter-spacing: 0.25em;
+            font-size: 11px;
+            font-weight: bold;
+            color: #64748b;
+            text-transform: uppercase;
+            margin-bottom: 12px;
+        }
+
+        .title-main {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 32px;
+        }
+
+        /* FLEXBOX PIN ROW LAYOUT */
+        .pin-wrapper-fixed {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin: 0 auto 24px auto;
+            gap: 6px;
+        }
+
+        .visual-box-fixed {
+            flex: 1;
+            background: linear-gradient(180deg, #121318 0%, #0d0e12 100%);
+            border: 2px solid #1a1b22;
+            border-radius: 14px;
+            height: 54px;
+            box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.01);
+            transition: all 0.15s ease-in-out;
+        }
+
+        .visual-box-fixed.active-focus {
+            border-color: #3b3e54;
+            box-shadow: 0 0 0 1px #3b3e54, 0 0 15px rgba(99, 102, 241, 0.15);
+            background: #14161d;
+        }
+
+        .visual-box-fixed.filled {
+            border-color: #2a2c3a;
+            background-image: radial-gradient(circle, #f8fafc 5px, transparent 6px);
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+
+        .status-text {
+            letter-spacing: 0.1em;
+            font-size: 11px;
+            font-weight: bold;
+            color: #f43f5e;
+            text-transform: uppercase;
+            margin-bottom: 28px;
+            min-height: 16px;
+        }
+
+        /* GRID KEYPAD LAYOUT */
+        .keypad-matrix-fixed {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: 100%;
+            max-width: 270px;
+            margin: 0 auto;
+        }
+
+        .key-block-fixed {
+            height: 52px;
+            background: #121318;
+            border: 1px solid #1a1b22;
+            color: #f8fafc;
+            font-size: 22px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 16px;
+            cursor: pointer;
+            touch-action: manipulation;
+            transition: background 0.1s;
+        }
+
+        .key-block-fixed:active {
+            background: #222530;
+        }
+
+        .key-special-fixed {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: bold;
+        }
+
+        .hidden-view {
+            display: none !important;
+        }
+
+        /* WORKSPACE CARD PANELS */
+        .file-card {
+            background: #121318;
+            border: 1px solid #1a1b22;
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 16px;
+            text-align: left;
+        }
+
+        .file-card h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #ffffff;
+        }
+
+        .file-card p {
+            margin: 4px 0 0 0;
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .btn-action {
+            width: 100%;
+            background: #f8fafc;
+            border: none;
+            color: #0f172a;
+            padding: 14px;
+            border-radius: 14px;
+            font-weight: bold;
+            font-size: 12px;
+            text-transform: uppercase;
+            cursor: pointer;
+            letter-spacing: 0.05em;
+        }
+
+        /* FILE LIST STYLING */
+        .file-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #1a1b22;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-info {
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            max-width: 180px;
+        }
+
+        .file-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: #e2e8f0;
+        }
+
+        .file-size {
+            font-size: 10px;
+            color: #64748b;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 6px;
+        }
+
+        .btn-sm {
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #38bdf8;
+            padding: 6px 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .btn-danger {
+            color: #f43f5e;
+            border-color: #4c1d24;
+            background: #1a0f12;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PAGE 1: AUTHENTICATION SHIELD LAYOUT -->
+    <div id="pinPage" class="page-container">
+        <div class="title-sub">Two-Step Verification</div>
+        <h1 class="title-main">Enter your passkey</h1>
+        
+        <div class="pin-wrapper-fixed" id="pinBoxWrapper">
+            <div class="visual-box-fixed active-focus"></div>
+            <div class="visual-box-fixed"></div>
+            <div class="visual-box-fixed"></div>
+            <div class="visual-box-fixed"></div>
+            <div class="visual-box-fixed"></div>
+            <div class="visual-box-fixed"></div>
+        </div>
+        
+        <div class="status-text" id="statusMsg"></div>
+
+        <div class="keypad-matrix-fixed">
+            <div class="key-block-fixed" onclick="tapKey('1')">1</div>
+            <div class="key-block-fixed" onclick="tapKey('2')">2</div>
+            <div class="key-block-fixed" onclick="tapKey('3')">3</div>
+            <div class="key-block-fixed" onclick="tapKey('4')">4</div>
+            <div class="key-block-fixed" onclick="tapKey('5')">5</div>
+            <div class="key-block-fixed" onclick="tapKey('6')">6</div>
+            <div class="key-block-fixed" onclick="tapKey('7')">7</div>
+            <div class="key-block-fixed" onclick="tapKey('8')">8</div>
+            <div class="key-block-fixed" onclick="tapKey('9')">9</div>
+            <div class="key-block-fixed key-special-fixed" onclick="tapDelete()" style="color: #f43f5e;">⌫</div>
+            <div class="key-block-fixed" onclick="tapKey('0')">0</div>
+            <div class="key-block-fixed key-special-fixed" onclick="tapClear()" style="color: #64748b;">Clear</div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: SECURE WORKSPACE INTERFACE -->
+    <div id="filesPage" class="page-container hidden-view" style="text-align: left; max-width: 400px; margin-top: 10px;">
+        <div class="file-card">
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1a1b22; padding-bottom: 12px; margin-bottom: 16px;">
+                <div>
+                    <h2>Secure Storage</h2>
+                    <p>Encrypted file workspace</p>
+                </div>
+                <button onclick="lockVaultAndReturn()" style="background: #1e293b; border: 1px solid #334155; color: #cbd5e1; padding: 6px 12px; border-radius: 8px; font-size: 12px; cursor: pointer;">Log Out</button>
+            </div>
+
+            <label style="display: block; font-size: 11px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">Upload File</label>
+            <form id="vaultForm" onsubmit="handleFileUpload(event)" style="margin: 0; padding: 0;">
+                <input type="file" id="fileInput" required style="display: block; width: 100%; color: #94a3b8; font-size: 12px; margin-bottom: 16px;">
+                <button type="submit" class="btn-action">Commit to Storage</button>
+            </form>
+        </div>
+
+        <!-- STORED FILES LIST -->
+        <div class="file-card">
+            <label style="display: block; font-size: 11px; font-weight: bold; color: #64748b; text-transform: uppercase; margin-bottom: 12px;">Stored Vault Files</label>
+            <div id="fileListContainer">
+                <p style="font-size: 12px; color: #64748b; margin: 0;">No files saved in vault yet.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CORRECT_PIN = "162546";
+        const PIN_LENGTH = CORRECT_PIN.length;
+        let currentPin = "";
+
+        const pinBoxes = document.querySelectorAll(".visual-box-fixed");
+        const statusMsg = document.getElementById("statusMsg");
+        const pinPage = document.getElementById("pinPage");
+        const filesPage = document.getElementById("filesPage");
+        const fileListContainer = document.getElementById("fileListContainer");
+
+        /* --- INDEXEDDB DATABASE FOR FILE STORAGE --- */
+        let db;
+        const request = indexedDB.open("VaultDB", 1);
+
+        request.onupgradeneeded = function (e) {
+            db = e.target.result;
+            if (!db.objectStoreNames.contains("files")) {
+                db.createObjectStore("files", { keyPath: "id", autoIncrement: true });
+            }
+        };
+
+        request.onsuccess = function (e) {
+            db = e.target.result;
+        };
+
+        request.onerror = function () {
+            console.error("IndexedDB error:", request.error);
+        };
+
+        /* --- PIN KEYPAD LOGIC --- */
+        function updatePinDisplay() {
+            pinBoxes.forEach((box, index) => {
+                box.classList.remove("filled", "active-focus");
+                if (index < currentPin.length) {
+                    box.classList.add("filled");
+                } else if (index === currentPin.length) {
+                    box.classList.add("active-focus");
+                }
+            });
+        }
+
+        function tapKey(digit) {
+            if (currentPin.length < PIN_LENGTH) {
+                statusMsg.textContent = "";
+                currentPin += digit;
+                updatePinDisplay();
+
+                if (currentPin.length === PIN_LENGTH) {
+                    setTimeout(verifyPin, 150);
+                }
+            }
+        }
+
+        function tapDelete() {
+            if (currentPin.length > 0) {
+                currentPin = currentPin.slice(0, -1);
+                statusMsg.textContent = "";
+                updatePinDisplay();
+            }
+        }
+
+        function tapClear() {
+            currentPin = "";
+            statusMsg.textContent = "";
+            updatePinDisplay();
+        }
+
+        function verifyPin() {
+            if (currentPin === CORRECT_PIN) {
+                pinPage.classList.add("hidden-view");
+                filesPage.classList.remove("hidden-view");
+                loadFiles();
+            } else {
+                statusMsg.textContent = "Invalid PIN. Try again.";
+                tapClear();
+            }
+        }
+
+        function lockVaultAndReturn() {
+            tapClear();
+            filesPage.classList.add("hidden-view");
+            pinPage.classList.remove("hidden-view");
+        }
+
+        /* --- FILE STORAGE & RETRIEVAL LOGIC --- */
+        function handleFileUpload(event) {
+            event.preventDefault();
+            const input = document.getElementById("fileInput");
+            if (!input.files.length) return;
+
+            const file = input.files[0];
+            const reader = new FileReader();
+
+            reader.onload = function (e) {
+                const fileData = {
+                    name: file.name,
+                    size: (file.size / 1024).toFixed(1) + " KB",
+                    type: file.type,
+                    content: e.target.result
+                };
+
+                const transaction = db.transaction(["files"], "readwrite");
+                const store = transaction.objectStore("files");
+                store.add(fileData);
+
+                transaction.oncomplete = function () {
+                    input.value = "";
+                    loadFiles();
+                };
+            };
+
+            reader.readAsDataURL(file);
+        }
+
+        function loadFiles() {
+            if (!db) return;
+
+            const transaction = db.transaction(["files"], "readonly");
+            const store = transaction.objectStore("files");
+            const getAll = store.getAll();
+
+            getAll.onsuccess = function () {
+                const files = getAll.result;
+                if (files.length === 0) {
+                    fileListContainer.innerHTML = '<p style="font-size: 12px; color: #64748b; margin: 0;">No files saved in vault yet.</p>';
+                    return;
+                }
+
+                fileListContainer.innerHTML = "";
+                files.forEach((file) => {
+                    const item = document.createElement("div");
+                    item.className = "file-item";
+                    item.innerHTML = `
+                        <div class="file-info">
+                            <div class="file-name">${file.name}</div>
+                            <div class="file-size">${file.size}</div>
+                        </div>
+                        <div class="btn-group">
+                            <a href="${file.content}" download="${file.name}" class="btn-sm">Download</a>
+                            <button onclick="deleteFile(${file.id})" class="btn-sm btn-danger">Delete</button>
+                        </div>
+                    `;
+                    fileListContainer.appendChild(item);
+                });
+            };
+        }
+
+        function deleteFile(id) {
+            const transaction = db.transaction(["files"], "readwrite");
+            const store = transaction.objectStore("files");
+            store.delete(id);
+
+            transaction.oncomplete = function () {
+                loadFiles();
+            };
+        }
+    </script>
+</body>
+</html>
